@@ -1,6 +1,6 @@
 # Chat-App-0.4
 
-THIS BRENCH
+THIS BRANCH
 GUI in progress
 
 
