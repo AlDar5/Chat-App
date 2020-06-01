@@ -1,5 +1,9 @@
 # Chat-App-0.4
 
+THIS BRENCH
+GUI in progress
+
+
 Just a simple Chat App with no encyption no GUI and clunky
 
 
