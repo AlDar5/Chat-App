@@ -1,7 +1,8 @@
 import socket
 import threading
 from datetime import datetime
-import time
+import Encryption as En
+
 
 
 
@@ -33,7 +34,7 @@ def HANDLE_CLIENT():
     global CONNECTED
     while CONNECTED:
         # Msg handling
-        msg = message_reciever()
+        msg = message_receiver()
         timestamp = str(datetime.now())
 
 
@@ -48,12 +49,38 @@ def HANDLE_CLIENT():
             msg = f"\r[{addr}|{timestamp}]\n::{msg}\n\n>" # Put \r at the start to delete previus line
             print(msg, end="") # put 'end=""' to avoid new line
 
-def message_reciever():
+
+def message_receiver():
     message_length = conn.recv(HEADER).decode(FORMAT)
     if message_length: # If the message length header has something is going to decode
         message_length = int(message_length)
-        msg = conn.recv(message_length).decode(FORMAT)
+
+        msg = conn.recv(message_length)
+
+        print("encrypted_message:", msg)
+
+        # --------MESSAGE DECRYPTION--------------
+        try:
+            msg = En.DECRYPT(key, msg)
+        except:
+            send_message(msg)
+
+        # ----------------------------------------
+
+        print("msg not decoded:", msg)
+
+        msg = msg.decode(FORMAT)
         return msg
+
+
+
+
+# def message_reciever():
+#     message_length = conn.recv(HEADER).decode(FORMAT)
+#     if message_length: # If the message length header has something is going to decode
+#         message_length = int(message_length)
+#         msg = conn.recv(message_length).decode(FORMAT)
+#         return msg
 
 
 
@@ -88,11 +115,25 @@ def CLIENT(): # Any "input" command will be here
 
 def send_message(msg):
     message = msg.encode(FORMAT) # Encodes the message itself
-    message_length = str(len(message)) # Converts the length of the encoded message to a string
-    send_length = message_length.encode(FORMAT) # Formats the length o the encoded message
+
+    # -----MESSAGE ENCRYPTION----
+    message = En.ENCRYPT(key, message)
+    # ---------------------------
+
+    # [ATTENTION] When obtaining "message_length", the "message" must be the one you will sent!!
+    message_length = str(len(message)) # Converts the length of the encoded and encrypted message to a string
+
+    send_length = message_length.encode(FORMAT) # Formats the length of the encoded and encrypted message
     send_length += b" " * (HEADER - len(send_length)) # Padds the message
 
-    # print(msg, message, send_length)
+    print("\n", msg)
+    print(message_length, type(message_length))
+    print(send_length, type(send_length))
+    print(message, "\n")
+
+
+
+    # return message
 
     conn.send(send_length)
     conn.send(message)
@@ -104,6 +145,7 @@ def send_message(msg):
 HEADER = 5
 FORMAT = "utf-8"
 DISCONNECT_MESSAGE = "/disconnect"
+salt_provided = b'\xe94\x86S\xa8\xfc/\nk)\xa5[\x853$\x92'
 
 
 
@@ -129,7 +171,12 @@ inx = input("Do you want to connect so someone or do you want to wait? CONNECT(c
 if inx.lower() == "c": # Connects you to a server
     CLIENT_IP_ADDRESS = input("IP ADDRESS:")
     CLIENT_PORT = int(input("PORT:"))
+
     CLIENT_SOCKET = (CLIENT_IP_ADDRESS, CLIENT_PORT)
+
+
+    PASSWORD = input("PASSWORD:")
+    key = En.GENERATE_KEY(PASSWORD, salt_provided)
 
 
     CLIENT_THREAD = threading.Thread(target=CLIENT)
@@ -138,7 +185,13 @@ if inx.lower() == "c": # Connects you to a server
 
 elif inx.lower() == "w": # Starts the server and waits for a connection
     SERVER_PORT = int(input(f"What port do you want to open?:"))
+
     SERVER_SOCKET = (SERVER_IP_ADDRESS, SERVER_PORT)
+
+
+    PASSWORD = input("PASSWORD:")
+    key = En.GENERATE_KEY(PASSWORD, salt_provided)
+
 
     SERVER_THREAD = threading.Thread(target=SERVER)
     SERVER_THREAD.start()
