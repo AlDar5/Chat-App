@@ -1,6 +1,7 @@
-# Chat-App-0.4
+# Chat-App-0.5
+Added encryption
 
-Just a simple Chat App with no encyption no GUI and clunky
+Just a simple Chat App with no GUI and clunky
 
 
 How to use:
