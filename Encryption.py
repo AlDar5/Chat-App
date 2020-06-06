@@ -48,11 +48,10 @@ def GENERATE_KEY(XpasswordX, salt):
 
 def ENCRYPT(key, message):
     # [ATTENTION] The "message" MUST already be in byte format
-    print("\nmodule encryption message:", message)
 
     f = Fernet(key)
     encrypted_message = f.encrypt(message)
-    print("module encryption encrypted_mesage:", encrypted_message)
+
     # returns the message in byte format
     return encrypted_message
 
@@ -62,7 +61,7 @@ def DECRYPT(key, encrypted_message):
 
     f = Fernet(key)
     decrypted_mesage = f.decrypt(encrypted_message)
-    print("module encryption decrypted_mesage:", decrypted_mesage)
+
 
     # returns the message in byte format
     return decrypted_mesage

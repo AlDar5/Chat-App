@@ -3,6 +3,8 @@ import threading
 from datetime import datetime
 import Encryption as En
 
+import GUI_Login
+
 
 
 
@@ -57,7 +59,7 @@ def message_receiver():
 
         msg = conn.recv(message_length)
 
-        print("encrypted_message:", msg)
+        # print("\nencrypted_message:", msg)
 
         # --------MESSAGE DECRYPTION--------------
         try:
@@ -67,7 +69,7 @@ def message_receiver():
 
         # ----------------------------------------
 
-        print("msg not decoded:", msg)
+        # print("msg not decoded:", msg)
 
         msg = msg.decode(FORMAT)
         return msg
@@ -126,13 +128,6 @@ def send_message(msg):
     send_length = message_length.encode(FORMAT) # Formats the length of the encoded and encrypted message
     send_length += b" " * (HEADER - len(send_length)) # Padds the message
 
-    print("\n", msg)
-    print(message_length, type(message_length))
-    print(send_length, type(send_length))
-    print(message, "\n")
-
-
-
     # return message
 
     conn.send(send_length)
@@ -167,31 +162,36 @@ SERVER_IP_ADDRESS = socket.gethostbyname(socket.gethostname()) # Gets you local 
 
 # Thread 0
 # CHAT APP # [ALSO] Dont foret to start the thread
-inx = input("Do you want to connect so someone or do you want to wait? CONNECT(c)/WAIT(w)")
+# inx = input("Do you want to connect so someone or do you want to wait? CONNECT(c)/WAIT(w)")
+
+temp_ip, temp_port, temp_password, inx = GUI_Login.GUI_client()
+
 if inx.lower() == "c": # Connects you to a server
-    CLIENT_IP_ADDRESS = input("IP ADDRESS:")
-    CLIENT_PORT = int(input("PORT:"))
+    CLIENT_IP_ADDRESS, CLIENT_PORT, PASSWORD = temp_ip, temp_port, temp_password
+
+
+    # CLIENT_IP_ADDRESS = input("IP ADDRESS:")
+    # CLIENT_PORT = int(input("PORT:"))
+    # PASSWORD = input("ENCRYPTION PASSWORD:")
+
 
     CLIENT_SOCKET = (CLIENT_IP_ADDRESS, CLIENT_PORT)
-
-
-    PASSWORD = input("PASSWORD:")
     key = En.GENERATE_KEY(PASSWORD, salt_provided)
-
 
     CLIENT_THREAD = threading.Thread(target=CLIENT)
     CLIENT_THREAD.start()
 
 
 elif inx.lower() == "w": # Starts the server and waits for a connection
-    SERVER_PORT = int(input(f"What port do you want to open?:"))
-
-    SERVER_SOCKET = (SERVER_IP_ADDRESS, SERVER_PORT)
+    SERVER_PORT, PASSWORD = temp_port, temp_password
 
 
-    PASSWORD = input("PASSWORD:")
+    # SERVER_PORT = int(input(f"What port do you want to open?:"))
+    # PASSWORD = input("ENCRYPTION PASSWORD:")
+
+
     key = En.GENERATE_KEY(PASSWORD, salt_provided)
 
-
+    SERVER_SOCKET = (SERVER_IP_ADDRESS, SERVER_PORT)
     SERVER_THREAD = threading.Thread(target=SERVER)
     SERVER_THREAD.start()
